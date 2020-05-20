@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-import Utils
-import WorkWithAutomation as WWA
-import WorkWithSObjects as WWS
+import utils
+import work_with_automation as WWA
+import work_with_s_objects as WWS
 
 
 def validation():
@@ -16,7 +16,7 @@ def find_pbs_vulnerabilities(dict_s_objects_lookup_fields, dict_s_objects_pbs):
         if key in dict_s_objects_pbs:
             if len(dict_s_objects_lookup_fields[key]) > 0:
                 lookup_fields = dict_s_objects_lookup_fields[key]
-                regexp = Utils.get_str_for_regexp(lookup_fields) + Utils.regexp_find_pb_vulnerable_conditionals
+                regexp = utils.get_str_for_regexp(lookup_fields) + utils.regexp_find_pb_vulnerable_conditionals
                 for pb in dict_s_objects_pbs[key]:
                     WWA.check_pb(pb, regexp)
 
@@ -26,9 +26,9 @@ def find_wfs_vulnerabilities(dict_s_objects_lookup_fields, dict_s_objects_wfs):
         if key in dict_s_objects_wfs:
             if len(dict_s_objects_lookup_fields[key]) > 0:
                 lookup_fields = dict_s_objects_lookup_fields[key]
-                regexp = Utils.regexp_find_wf_vulnerable_conditionals_1 \
-                         + Utils.get_str_for_regexp(lookup_fields) \
-                         + Utils.regexp_find_wf_vulnerable_conditionals_2
+                regexp = utils.regexp_find_wf_vulnerable_conditionals_1 \
+                         + utils.get_str_for_regexp(lookup_fields) \
+                         + utils.regexp_find_wf_vulnerable_conditionals_2
                 for wf in dict_s_objects_wfs[key]:
                     WWA.check_wf(wf, regexp)
 

@@ -3,8 +3,8 @@
 import os
 import re
 from lxml import etree
-import Utils
-import WorkWithAutomation as WWA
+import utils
+import work_with_automation as WWA
 
 
 def create_package_xml():
@@ -34,9 +34,9 @@ def create_package_xml():
         '\"',
         etree.tostring(tree.getroot(), encoding="UTF-8", xml_declaration=True, pretty_print=True).decode("utf-8")
     )
-    if os.path.exists(Utils.retrieve_sobjects_path) is False:
-        os.mkdir(Utils.retrieve_sobjects_path)
-    os.chdir(Utils.retrieve_sobjects_path)
+    if os.path.exists(utils.retrieve_sobjects_path) is False:
+        os.mkdir(utils.retrieve_sobjects_path)
+    os.chdir(utils.retrieve_sobjects_path)
 
     with open("package.xml", "w") as package:
         package.write(result)
