@@ -3,19 +3,19 @@
 import os
 import re
 from lxml import etree
+import work_with_automation as wwa
 import utils
-import work_with_automation as WWA
 
 
 def create_package_xml():
-    s_object_names = WWA.get_sobjects_name_from_pbs_and_workflows()
+    s_object_names = wwa.get_sobjects_name_from_pbs_and_workflows()
 
-    page = etree.Element("Package")
-    page.set("xmlns", "http://soap.sforce.com/2006/04/metadata")
+    document = etree.Element("Package")
+    document.set("xmlns", "http://soap.sforce.com/2006/04/metadata")
 
     for s_object_name in s_object_names:
         types = etree.Element("types")
-        page.append(types)
+        document.append(types)
 
         members = etree.SubElement(types, "members")
         members.text = s_object_name
@@ -23,11 +23,11 @@ def create_package_xml():
         name = etree.SubElement(types, "name")
         name.text = "CustomObject"
 
-    version = etree.SubElement(page, "version")
+    version = etree.SubElement(document, "version")
     version.text = "48.0"
 
-    etree.indent(page, space="    ")
-    tree = etree.ElementTree(page)
+    etree.indent(document, space="    ")
+    tree = etree.ElementTree(document)
 
     result = re.sub(
         r'\'',

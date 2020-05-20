@@ -31,7 +31,7 @@ def get_sobjects_name_from_pbs_and_workflows():
 
 
 def get_dict_s_objects_pbs():
-    map_s_objects_and_pb = {}
+    dict_s_objects_and_pb = {}
     os.chdir(utils.rootFolder)
     automations_dir = os.listdir(path=utils.automation_files_path)
     if utils.folder_name_flows in automations_dir:
@@ -42,13 +42,13 @@ def get_dict_s_objects_pbs():
                 with open(flow, "r") as file:
                     s_object_name = re.search(utils.regexp_find_s_object_name, file.read())
                     if s_object_name is not None:
-                        utils.set_key(map_s_objects_and_pb, s_object_name.group(0), flow)
+                        utils.set_key(dict_s_objects_and_pb, s_object_name.group(0), flow)
     os.chdir(utils.rootFolder)
-    return map_s_objects_and_pb
+    return dict_s_objects_and_pb
 
 
 def get_dict_wfs():
-    map_s_objects_and_wfs = {}
+    dict_s_objects_and_wfs = {}
     os.chdir(utils.rootFolder)
     automations_dir = os.listdir(path=utils.automation_files_path)
     if utils.folder_name_workflows in automations_dir:
@@ -56,12 +56,13 @@ def get_dict_wfs():
         if len(workflows_dir) > 0:
             for fileName in workflows_dir:
                 s_object_name = re.search(utils.regexp_find_s_object_name_from_file_name, fileName).group(0)
-                map_s_objects_and_wfs[s_object_name] = [fileName]
+                dict_s_objects_and_wfs[s_object_name] = [fileName]
     os.chdir(utils.rootFolder)
-    return map_s_objects_and_wfs
+    return dict_s_objects_and_wfs
 
 
 def check_pb(name_pb, regexp_with_lookup_fields):
+    dict_result = {}
     os.chdir(utils.rootFolder)
     flows_dir = os.listdir(path=utils.flows_path)
     if name_pb in flows_dir:
@@ -69,12 +70,13 @@ def check_pb(name_pb, regexp_with_lookup_fields):
         with open(name_pb, "r") as file:
             errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
             if len(errors) > 0:
-                print(name_pb)
-                print(errors)
+                utils.get_pb_result(dict_result, name_pb, errors)
     os.chdir(utils.rootFolder)
+    return dict_result
 
 
 def check_wf(name_wf, regexp_with_lookup_fields):
+    dict_result = {}
     os.chdir(utils.rootFolder)
     workflows_dir = os.listdir(path=utils.workflows_path)
     if name_wf in workflows_dir:
@@ -82,6 +84,6 @@ def check_wf(name_wf, regexp_with_lookup_fields):
         with open(name_wf, "r") as file:
             errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
             if len(errors) > 0:
-                print(name_wf)
-                print(errors)
+                utils.get_wf_result(dict_result, name_wf, errors)
     os.chdir(utils.rootFolder)
+    return dict_result
