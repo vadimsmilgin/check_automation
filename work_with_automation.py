@@ -69,8 +69,9 @@ def check_pb(name_pb, regexp_with_lookup_fields):
         os.chdir(utils.flows_path)
         with open(name_pb, "r") as file:
             errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
-            if len(errors) > 0:
-                utils.get_pb_result(dict_result, name_pb, errors)
+            list_unique_errors = list(set(errors))
+            if len(list_unique_errors) > 0:
+                utils.get_pb_result(dict_result, name_pb, list_unique_errors)
     os.chdir(utils.rootFolder)
     return dict_result
 
@@ -82,8 +83,10 @@ def check_wf(name_wf, regexp_with_lookup_fields):
     if name_wf in workflows_dir:
         os.chdir(utils.workflows_path)
         with open(name_wf, "r") as file:
-            errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
-            if len(errors) > 0:
-                utils.get_wf_result(dict_result, name_wf, errors)
+            rules = re.findall(utils.regexp_find_rules, file.read(), re.M | re.S)
+            for rule in rules:
+                error = re.findall(regexp_with_lookup_fields, rule, re.M | re.S)
+                if len(error) > 0:
+                    utils.get_wf_result(dict_result, name_wf, error)
     os.chdir(utils.rootFolder)
     return dict_result
