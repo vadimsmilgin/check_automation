@@ -9,6 +9,7 @@ import utils
 
 command = 'ant retrieveUnpackaged'
 command2 = 'ant retrieveSObjects'
+command3 = 'ant retrieveWorkflows'
 
 
 class Context:
@@ -43,14 +44,20 @@ class Context:
         output = subprocess.run(command, shell=True)
         if output.returncode == 0:
             os.chdir(utils.rootFolder)
-            package_creator = subprocess.run([sys.executable, 'package_creator.py'], check=True)
+            package_creator = subprocess.run([sys.executable, 's_object_package_creator.py'], check=True)
             if package_creator.returncode == 0:
                 os.chdir(self._strategy.get_sample_path())
                 output2 = subprocess.run(command2, shell=True)
                 if output2.returncode == 0:
                     os.chdir(utils.rootFolder)
-                    error_validator = subprocess.run([sys.executable, 'error_validator.py'], check=True, stdout=subprocess.PIPE)
-                    print(error_validator.stdout.decode('utf-8'))
+                    wf_package_creator = subprocess.run([sys.executable, 'workflow_package_creator.py'], check=True)
+                    if wf_package_creator.returncode == 0:
+                        os.chdir(self._strategy.get_sample_path())
+                        output3 = subprocess.run(command3, shell=True)
+                        if output3.returncode == 0:
+                            os.chdir(utils.rootFolder)
+                            error_validator = subprocess.run([sys.executable, 'error_validator.py'], check=True, stdout=subprocess.PIPE)
+                            print(error_validator.stdout.decode('utf-8'))
 
 
 class Strategy(ABC):
