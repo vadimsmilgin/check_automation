@@ -63,19 +63,51 @@ class WorkWithAutomation:
         os.chdir(utils.rootFolder)
         return dict_s_objects_and_wfs
 
-    def check_pb(self, name_pb, regexp_with_lookup_fields) -> dict:
-        dict_result = {}
+    def check_pb(self, name_pb, lookup_fields) -> list:
+        dict_errors = {}
+        dict_warnings = {}
+        list_errors = []
+        list_warnings = []
+        list_result = []
         os.chdir(utils.rootFolder)
         flows_dir = os.listdir(path=self._context.get_flows_path())
         if name_pb in flows_dir:
             os.chdir(self._context.get_flows_path())
             with open(name_pb, "r") as file:
-                errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
-                list_unique_errors = list(set(errors))
-                if len(list_unique_errors) > 0:
-                    utils.get_pb_result(dict_result, name_pb, list_unique_errors)
+                str_file = file.read()
+                rules = re.findall(utils.regexp_find_rules, str_file, re.M | re.S)
+                for rule in rules:
+                    errors = re.findall('\.' + lookup_fields + utils.regexp_find_pb_error, rule, re.M | re.S)
+                    list_unique_errors = list(set(errors))
+                    if len(list_unique_errors) > 0:
+                        list_errors = list_errors + list_unique_errors
+                        continue
+                    else:
+                        is_changed_rules = re.findall(utils.regexp_find_is_changed_rule, rule, re.M | re.S)
+                        if len(is_changed_rules) > 0:
+                            for is_changed_rule in is_changed_rules:
+                                xxx = re.findall('\.' + lookup_fields + utils.regexp_find_pb_not_error, rule, re.M | re.S)
+                                if len(xxx) == 0:
+                                    str2 = utils.regexp_find_is_changed_1 + is_changed_rule + utils.regexp_find_is_changed_2
+                                    warning = re.findall(str2, str_file, re.M | re.S)
+                                    if len(warning) == 1:
+                                        warn = re.findall('\.' + lookup_fields, warning[0], re.M | re.S)
+                                        list_warnings = list_warnings + warn
+
+                list_errors1 = list(set(list_errors))
+                list_warnings1 = list(set(list_warnings))
+
+                utils.get_pb_result(dict_errors, name_pb, list_errors1)
+                utils.get_pb_result(dict_warnings, name_pb, list_warnings1)
+
+                list_result.append(dict_errors)
+                list_result.append(dict_warnings)
+                # errors = re.findall(regexp_with_lookup_fields, file.read(), re.M | re.S)
+                # list_unique_errors = list(set(errors))
+                # if len(list_unique_errors) > 0:
+                #     utils.get_pb_result(dict_result, name_pb, list_unique_errors)
         os.chdir(utils.rootFolder)
-        return dict_result
+        return list_result
 
     def check_wf(self, name_wf, regexp_with_lookup_fields) -> dict:
         dict_result = {}
@@ -100,12 +132,10 @@ class WorkWithAutomation:
             if key in dict_s_objects_pbs:
                 if len(dict_s_objects_lookup_fields[key]) > 0:
                     lookup_fields = dict_s_objects_lookup_fields[key]
-                    error_regexp = utils.get_str_for_regexp(
-                        lookup_fields) + utils.regexp_find_pb_vulnerable_conditionals
-                    warning_regexp = utils.get_str_for_regexp(lookup_fields)
                     for pb in dict_s_objects_pbs[key]:
-                        utils.add_dict_to_list(pb_error_list, self.check_pb(pb, error_regexp))
-                        utils.add_dict_to_list(pb_warnings_list, self.check_pb(pb, warning_regexp))
+                        list1 = self.check_pb(pb, utils.get_str_for_regexp(lookup_fields))
+                        utils.add_dict_to_list(pb_error_list, list1[0])
+                        utils.add_dict_to_list(pb_warnings_list, list1[1])
         pb_full_list.append(pb_error_list)
         pb_full_list.append(pb_warnings_list)
         return pb_full_list
