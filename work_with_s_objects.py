@@ -17,7 +17,7 @@ class WorkWithSObjects:
             if len(s_objects_dir) > 0:
                 os.chdir(self._context.get_s_objects_path())
                 for s_object_file in s_objects_dir:
-                    s_object_name = re.search(utils.regexp_find_s_object_name_from_file_name, s_object_file).group(0)
+                    s_object_name = re.search(utils.regexp_s_object_name_from_file_name, s_object_file).group(0)
                     with open(s_object_file, "r", encoding="utf-8") as file:
                         look_up_fields = re.findall(utils.regexp_find_lookup_fields, file.read(), re.M | re.S)
                         if look_up_fields is not None:
