@@ -2,6 +2,7 @@
 
 import json
 import platform
+from datetime import datetime
 from work_with_automation import WorkWithAutomation
 from work_with_s_objects import WorkWithSObjects
 from context import Context, Windows, MacOS
@@ -20,19 +21,27 @@ def validation():
     wwa = WorkWithAutomation(context1)
     wws = WorkWithSObjects(context1)
 
-    if len(wwa.find_pbs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_s_objects_pbs())[0]) > 0:
-        errors['Process_Builders'] = wwa.find_pbs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_s_objects_pbs())[0]
-    if len(wwa.find_wfs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_wfs())[0]) > 0:
-        errors['Workflows'] = wwa.find_wfs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_wfs())[0]
+    pbs_errors_warnings = wwa.find_pbs_vulnerabilities(wws.get_lookup_fields())
+    wfs_errors_warnings = wwa.find_wfs_vulnerabilities(wws.get_lookup_fields())
 
-    if len(wwa.find_pbs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_s_objects_pbs())[1]) > 0:
-        warnings['Process_Builders'] = wwa.find_pbs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_s_objects_pbs())[1]
-    if len(wwa.find_wfs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_wfs())[1]) > 0:
-        warnings['Workflows'] = wwa.find_wfs_vulnerabilities(wws.get_lookup_fields(), wwa.get_dict_wfs())[1]
+    if len(pbs_errors_warnings[0]) > 0:
+        errors['Process_Builders'] = pbs_errors_warnings[0]
+    if len(wfs_errors_warnings[0]) > 0:
+        errors['Workflows'] = wfs_errors_warnings[0]
+
+    if len(pbs_errors_warnings[1]) > 0:
+        warnings['Process_Builders'] = pbs_errors_warnings[1]
+    if len(wfs_errors_warnings[1]) > 0:
+        warnings['Workflows'] = wfs_errors_warnings[1]
 
     full_result['Errors'] = errors
     full_result['Warnings'] = warnings
     print(json.dumps(full_result, indent=4))
+
+    name = 'result_' + datetime.now().strftime("%m_%d_%Y-%H.%M.%S") + '.txt'
+
+    with open(name, "w") as package:
+        package.write(json.dumps(full_result, indent=4))
 
 
 if __name__ == "__main__":

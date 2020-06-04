@@ -66,10 +66,10 @@ class WorkWithAutomation:
         return dict_s_objects_and_wfs
 
     def check_pb(self, name_pb, lookup_fields) -> list:
-        dict_errors = {}
-        dict_warnings = {}
         list_errors = []
         list_warnings = []
+        dict_errors = {}
+        dict_warnings = {}
         list_result = []
 
         os.chdir(utils.rootFolder)
@@ -78,6 +78,7 @@ class WorkWithAutomation:
             os.chdir(self._context.get_flows_path())
             with open(name_pb, "r") as file:
                 str_file = file.read()
+                # check pb's all rules for errors and warnings
                 rules = re.findall(utils.regexp_rules, str_file, re.M | re.S)
                 for rule in rules:
                     errors = re.findall(
@@ -90,23 +91,15 @@ class WorkWithAutomation:
                         rule,
                         re.M | re.S
                     )
-                    errors3 = re.findall(
-                        r'\.' + lookup_fields + utils.regexp_pb_is_null_true_in_formula,
-                        str_file,
-                        re.M | re.S
-                    )
 
                     list_unique_errors = list(set(errors))
                     list_unique_errors2 = list(set(errors2))
-                    list_unique_errors3 = list(set(errors3))
 
-                    if len(list_unique_errors) > 0 or len(list_unique_errors2) > 0 or len(list_unique_errors3) > 0:
+                    if len(list_unique_errors) > 0 or len(list_unique_errors2) > 0:
                         if len(list_unique_errors) > 0:
                             list_errors += list_unique_errors
                         if len(list_unique_errors2) > 0:
                             list_errors += list_unique_errors2
-                        if len(list_unique_errors3) > 0:
-                            list_errors += list_unique_errors3
                         continue
                     else:
                         is_changed_rules = re.findall(utils.regexp_pb_name_of_is_changed_rule, rule, re.M | re.S)
@@ -130,10 +123,51 @@ class WorkWithAutomation:
                                     )
                                     if len(warning) == 1:
                                         warn = re.findall(r'\.' + lookup_fields, warning[0], re.M | re.S)
-                                        list_warnings = list_warnings + warn
+                                        list_warnings += warn
 
-                utils.get_pb_result(dict_errors, name_pb, list(set(list_errors)))
-                utils.get_pb_result(dict_warnings, name_pb, list(set(list_warnings)))
+                list_errors = list(set(list_errors))
+                list_warnings = list(set(list_warnings))
+
+                # check pb's formulas for errors and warnings
+                formulas = re.findall(
+                    r'<formulas>(.*?)</formulas>',
+                    str_file,
+                    re.M | re.S
+                )
+                for formula in formulas:
+                    errors3 = re.findall(
+                        r'\.' + lookup_fields + utils.regexp_pb_is_null_true_in_formula,
+                        formula,
+                        re.M | re.S
+                    )
+                    list_unique_errors3 = list(set(errors3))
+                    if len(list_unique_errors3) > 0:
+                        desc = re.findall(
+                            r'<stringValue>(.*?)</stringValue>',
+                            formula,
+                            re.M | re.S
+                        )
+                        pppp = {'fields': list(set(list_unique_errors3)), 'description': desc}
+                        list_list = [pppp]
+                        list_errors += list_list
+
+                    warnings = re.findall(
+                        r'ISCHANGED\s*\(\s*.*?\.' + lookup_fields,
+                        formula,
+                        re.M | re.S
+                    )
+                    if len(warnings) > 0:
+                        desc = re.findall(
+                            r'<stringValue>(.*?)</stringValue>',
+                            formula,
+                            re.M | re.S
+                        )
+                        pppp = {'fields': list(set(warnings)), 'description': desc}
+                        list_list = [pppp]
+                        list_warnings += list_list
+
+                utils.get_pb_result(dict_errors, name_pb, list_errors)
+                utils.get_pb_result(dict_warnings, name_pb, list_warnings)
 
                 list_result.append(dict_errors)
                 list_result.append(dict_warnings)
@@ -153,14 +187,21 @@ class WorkWithAutomation:
                     error = re.findall(regexp_with_lookup_fields, rule, re.M | re.S)
                     if len(error) > 0:
                         rule_name = re.findall(utils.regexp_full_name, rule, re.M | re.S)[0]
-                        utils.get_wf_result(dict_result, name_wf, rule_name, error)
+                        formula = re.findall(r'(<formula>.*?</formula>)', rule, re.M | re.S)
+                        criteria = re.findall(r'(<criteriaItems>.*?</criteriaItems>)', rule, re.M | re.S)
+                        if len(formula) > 0:
+                            utils.get_wf_result(dict_result, name_wf, rule_name, error, formula)
+                        elif len(criteria) > 0:
+                            utils.get_wf_result(dict_result, name_wf, rule_name, error, criteria)
         os.chdir(utils.rootFolder)
         return dict_result
 
-    def find_pbs_vulnerabilities(self, dict_s_objects_lookup_fields, dict_s_objects_pbs):
+    def find_pbs_vulnerabilities(self, dict_s_objects_lookup_fields) -> list:
         pb_error_list = []
         pb_warnings_list = []
         pb_full_list = []
+
+        dict_s_objects_pbs = self.get_dict_s_objects_pbs()
 
         for key in dict_s_objects_lookup_fields:
             if key in dict_s_objects_pbs:
@@ -174,10 +215,12 @@ class WorkWithAutomation:
         pb_full_list.append(pb_warnings_list)
         return pb_full_list
 
-    def find_wfs_vulnerabilities(self, dict_s_objects_lookup_fields, dict_s_objects_wfs):
+    def find_wfs_vulnerabilities(self, dict_s_objects_lookup_fields) -> list:
         wf_error_list = []
         wf_warnings_list = []
         wf_full_list = []
+
+        dict_s_objects_wfs = self.get_dict_wfs()
 
         for key in dict_s_objects_lookup_fields:
             if key in dict_s_objects_wfs:

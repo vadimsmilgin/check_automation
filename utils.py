@@ -39,7 +39,7 @@ regexp_pb_is_changed_rule_end = '.*?</rules>'
 regexp_wf_is_null_true_start = '<fullName>(.*?)</fullName>.*?<formula>.*?(?:ISNULL).*?'
 regexp_wf_is_null_true_end = '.*?</formula>'
 
-regexp_wf_is_changed = 'ISCHANGED\(\s*'
+regexp_wf_is_changed = 'ISCHANGED\s*\(\s*'
 
 
 def set_key(dictionary, key, value):
@@ -65,11 +65,11 @@ def get_pb_result(dictionary, name, errors):
         dictionary['lookup_fields'] = errors
 
 
-def get_wf_result(dictionary, wf_name, rule_name, errors):
+def get_wf_result(dictionary, wf_name, rule_name, errors, desc):
     if 'sObject' not in dictionary:
         dictionary['sObject'] = re.search(regexp_s_object_name_from_file_name, wf_name).group(0)
 
-    dict_rule = {'name': rule_name, 'lookup_fields': errors}
+    dict_rule = {'name': rule_name, 'lookup_fields': errors, 'description': desc[0]}
 
     if 'workflows' not in dictionary:
         list_list = [dict_rule]
