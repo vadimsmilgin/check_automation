@@ -22,7 +22,7 @@ regexp_pb_is_null_true_start = '<stringValue>GlobalConstant</stringValue>\n\s{20
                                '\n\s{16}</processMetadataValues>\n\s{16}<leftValueReference>.*?\.'
 regexp_pb_is_null_true_end = '</leftValueReference>\n\s{16}<operator>EqualTo</operator>'
 
-regexp_pb_is_null_true_in_formula = '\s*==\s*(?:NULL|null)'
+regexp_pb_equal_null = '\s*==\s*(?:NULL|null)'
 
 regexp_pb_is_not_null = '</leftValueReference>\n\s{16}<operator>IsNull</operator>' + \
                         '\n\s{16}<rightValue>\n\s{20}<booleanValue>false'

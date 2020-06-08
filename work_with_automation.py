@@ -135,35 +135,51 @@ class WorkWithAutomation:
                     re.M | re.S
                 )
                 for formula in formulas:
-                    errors3 = re.findall(
-                        r'\.' + lookup_fields + utils.regexp_pb_is_null_true_in_formula,
+                    errors_equal_null = re.findall(
+                        r'\.' + lookup_fields + utils.regexp_pb_equal_null,
                         formula,
                         re.M | re.S
                     )
-                    list_unique_errors3 = list(set(errors3))
-                    if len(list_unique_errors3) > 0:
+                    list_unique_errors_equal_null = list(set(errors_equal_null))
+                    if len(list_unique_errors_equal_null) > 0:
                         desc = re.findall(
                             r'<stringValue>(.*?)</stringValue>',
                             formula,
                             re.M | re.S
                         )
-                        pppp = {'fields': list(set(list_unique_errors3)), 'description': desc}
-                        list_list = [pppp]
+                        errors = {'fields': list_unique_errors_equal_null, 'description': desc}
+                        list_list = [errors]
                         list_errors += list_list
 
-                    warnings = re.findall(
+                    errors_isblank_or_isnull = re.findall(
+                        r'(?<!NOT)\s*\(\s*(?:ISBLANK|ISNULL)\s*\(.*?' + lookup_fields,
+                        formula,
+                        re.M | re.S
+                    )
+                    list_unique_errors_isblank_or_isnull = list(set(errors_isblank_or_isnull))
+                    if len(list_unique_errors_isblank_or_isnull) > 0:
+                        desc = re.findall(
+                            r'<stringValue>(.*?)</stringValue>',
+                            formula,
+                            re.M | re.S
+                        )
+                        errors = {'fields': list_unique_errors_isblank_or_isnull, 'description': desc}
+                        list_list = [errors]
+                        list_errors += list_list
+
+                    warnings_ischanged = re.findall(
                         r'ISCHANGED\s*\(\s*.*?\.' + lookup_fields,
                         formula,
                         re.M | re.S
                     )
-                    if len(warnings) > 0:
+                    if len(warnings_ischanged) > 0:
                         desc = re.findall(
                             r'<stringValue>(.*?)</stringValue>',
                             formula,
                             re.M | re.S
                         )
-                        pppp = {'fields': list(set(warnings)), 'description': desc}
-                        list_list = [pppp]
+                        warnings = {'fields': list(set(warnings)), 'description': desc}
+                        list_list = [warnings]
                         list_warnings += list_list
 
                 utils.get_pb_result(dict_errors, name_pb, list_errors)
