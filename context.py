@@ -7,9 +7,9 @@ import sys
 import subprocess
 import utils
 
-command = 'ant retrieveUnpackaged'
-command2 = 'ant retrieveSObjects'
-command3 = 'ant retrieveWorkflows'
+retrieve_unpackaged = 'ant retrieveUnpackaged'
+retrieve_sobjects = 'ant retrieveSObjects'
+retrieve_workflows = 'ant retrieveWorkflows'
 
 
 class Context:
@@ -41,22 +41,22 @@ class Context:
 
     def execute(self):
         os.chdir(self._strategy.get_sample_path())
-        output = subprocess.run(command, shell=True)
+        output = subprocess.run(retrieve_unpackaged, shell=True)
         if output.returncode == 0:
             os.chdir(utils.rootFolder)
             package_creator = subprocess.run([sys.executable, 's_object_package_creator.py'], check=True)
             if package_creator.returncode == 0:
                 os.chdir(self._strategy.get_sample_path())
-                output2 = subprocess.run(command2, shell=True)
+                output2 = subprocess.run(retrieve_sobjects, shell=True)
                 if output2.returncode == 0:
                     os.chdir(utils.rootFolder)
                     wf_package_creator = subprocess.run([sys.executable, 'workflow_package_creator.py'], check=True)
                     if wf_package_creator.returncode == 0:
                         os.chdir(self._strategy.get_sample_path())
-                        output3 = subprocess.run(command3, shell=True)
+                        output3 = subprocess.run(retrieve_workflows, shell=True)
                         if output3.returncode == 0:
                             os.chdir(utils.rootFolder)
-                            error_validator = subprocess.run([sys.executable, 'error_validator.py'], check=True)
+                            subprocess.run([sys.executable, 'validator.py'], check=True)
 
 
 class Strategy(ABC):
