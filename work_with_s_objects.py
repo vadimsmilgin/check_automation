@@ -10,8 +10,9 @@ class WorkWithSObjects:
     def __init__(self, context: Context):
         self._context = context
 
-    def get_lookup_fields(self):
-        map_s_object_and_lookup_fields = {}
+    def get_lookup_fields(self) -> dict:
+        dict_s_object_and_lookup_fields = {}
+
         s_objects_dir = os.listdir(path=self._context.get_s_objects_path())
         try:
             if len(s_objects_dir) > 0:
@@ -21,8 +22,8 @@ class WorkWithSObjects:
                     with open(s_object_file, "r", encoding="utf-8") as file:
                         look_up_fields = re.findall(utils.regexp_find_lookup_fields, file.read(), re.M | re.S)
                         if look_up_fields is not None:
-                            map_s_object_and_lookup_fields[s_object_name] = look_up_fields
+                            dict_s_object_and_lookup_fields[s_object_name] = look_up_fields
         except Exception as e:
             print(e)
         os.chdir(utils.rootFolder)
-        return map_s_object_and_lookup_fields
+        return dict_s_object_and_lookup_fields
