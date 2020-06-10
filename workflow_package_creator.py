@@ -10,10 +10,10 @@ from work_with_s_objects import WorkWithSObjects
 
 def create_package_xml():
     if platform.system() == 'Windows':
-        context1 = Context(Windows())
+        _context = Context(Windows())
     if platform.system() == 'Darwin':
-        context1 = Context(MacOS())
-    wws = WorkWithSObjects(context1)
+        _context = Context(MacOS())
+    wws = WorkWithSObjects(_context)
 
     s_object_name = wws.get_lookup_fields()
     keys = s_object_name.keys()
@@ -48,7 +48,7 @@ def create_package_xml():
         '\"',
         etree.tostring(tree.getroot(), encoding="UTF-8", xml_declaration=True, pretty_print=True).decode("utf-8")
     )
-    os.chdir(context1.get_automation_files_path())
+    os.chdir(_context.get_automation_files_path())
 
     with open("package.xml", "w") as package:
         package.write(result)

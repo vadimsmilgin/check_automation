@@ -17,10 +17,10 @@ def start():
         subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing], stdout=subprocess.DEVNULL)
 
     if platform.system() == 'Windows':
-        context1 = Context(Windows())
+        _context = Context(Windows())
     if platform.system() == 'Darwin':
-        context1 = Context(MacOS())
-    context1.execute()
+        _context = Context(MacOS())
+    _context.execute()
 
 
 if __name__ == "__main__":

@@ -10,10 +10,10 @@ from context import Context, Windows, MacOS
 
 def create_package_xml():
     if platform.system() == 'Windows':
-        context1 = Context(Windows())
+        _context = Context(Windows())
     if platform.system() == 'Darwin':
-        context1 = Context(MacOS())
-    wwa = WorkWithAutomation(context1)
+        _context = Context(MacOS())
+    wwa = WorkWithAutomation(_context)
 
     s_object_names = wwa.get_sobjects_name_from_pbs_and_workflows()
 
@@ -41,9 +41,9 @@ def create_package_xml():
         '\"',
         etree.tostring(tree.getroot(), encoding="UTF-8", xml_declaration=True, pretty_print=True).decode("utf-8")
     )
-    if os.path.exists(context1.get_retrieve_sobjects_path()) is False:
-        os.mkdir(context1.get_retrieve_sobjects_path())
-    os.chdir(context1.get_retrieve_sobjects_path())
+    if os.path.exists(_context.get_retrieve_sobjects_path()) is False:
+        os.mkdir(_context.get_retrieve_sobjects_path())
+    os.chdir(_context.get_retrieve_sobjects_path())
 
     with open("package.xml", "w") as package:
         package.write(result)
