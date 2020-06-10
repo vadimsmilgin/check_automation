@@ -12,6 +12,7 @@ class WorkWithAutomation:
 
     def get_sobjects_name_from_pbs_and_workflows(self) -> set:
         set_s_objects = set()
+
         try:
             automations_dir = os.listdir(path=self._context.get_automation_files_path())
             if utils.folder_name_flows in automations_dir:
@@ -130,7 +131,7 @@ class WorkWithAutomation:
 
                 # check pb's formulas for errors and warnings
                 formulas = re.findall(
-                    r'<formulas>(.*?)</formulas>',
+                    utils.regexp_formulas,
                     str_file,
                     re.M | re.S
                 )
@@ -143,44 +144,41 @@ class WorkWithAutomation:
                     list_unique_errors_equal_null = list(set(errors_equal_null))
                     if len(list_unique_errors_equal_null) > 0:
                         desc = re.findall(
-                            r'<stringValue>(.*?)</stringValue>',
+                            utils.regexp_description,
                             formula,
                             re.M | re.S
                         )
                         errors = {'fields': list_unique_errors_equal_null, 'description': desc}
-                        list_list = [errors]
-                        list_errors += list_list
+                        list_errors += [errors]
 
                     errors_isblank_or_isnull = re.findall(
-                        r'(?<!NOT)\s*\(\s*(?:ISBLANK|ISNULL)\s*\(.*?' + lookup_fields,
+                        utils.regexp_pb_isblank_or_isnull + lookup_fields,
                         formula,
                         re.M | re.S
                     )
                     list_unique_errors_isblank_or_isnull = list(set(errors_isblank_or_isnull))
                     if len(list_unique_errors_isblank_or_isnull) > 0:
                         desc = re.findall(
-                            r'<stringValue>(.*?)</stringValue>',
+                            utils.regexp_description,
                             formula,
                             re.M | re.S
                         )
                         errors = {'fields': list_unique_errors_isblank_or_isnull, 'description': desc}
-                        list_list = [errors]
-                        list_errors += list_list
+                        list_errors += [errors]
 
-                    warnings_ischanged = re.findall(
-                        r'ISCHANGED\s*\(\s*.*?\.' + lookup_fields,
+                    warnings_is_changed = re.findall(
+                        utils.regexp_pb_is_changed + lookup_fields,
                         formula,
                         re.M | re.S
                     )
-                    if len(warnings_ischanged) > 0:
+                    if len(warnings_is_changed) > 0:
                         desc = re.findall(
-                            r'<stringValue>(.*?)</stringValue>',
+                            utils.regexp_description,
                             formula,
                             re.M | re.S
                         )
-                        warnings = {'fields': list(set(warnings)), 'description': desc}
-                        list_list = [warnings]
-                        list_warnings += list_list
+                        warnings = {'fields': list(set(warnings_is_changed)), 'description': desc}
+                        list_warnings += [warnings]
 
                 utils.get_pb_result(dict_errors, name_pb, list_errors)
                 utils.get_pb_result(dict_warnings, name_pb, list_warnings)
@@ -203,8 +201,8 @@ class WorkWithAutomation:
                     error = re.findall(regexp_with_lookup_fields, rule, re.M | re.S)
                     if len(error) > 0:
                         rule_name = re.findall(utils.regexp_full_name, rule, re.M | re.S)[0]
-                        formula = re.findall(r'(<formula>.*?</formula>)', rule, re.M | re.S)
-                        criteria = re.findall(r'(<criteriaItems>.*?</criteriaItems>)', rule, re.M | re.S)
+                        formula = re.findall(utils.regexp_formulas, rule, re.M | re.S)
+                        criteria = re.findall(utils.regexp_criteria_items, rule, re.M | re.S)
                         if len(formula) > 0:
                             utils.get_wf_result(dict_result, name_wf, rule_name, error, formula)
                         elif len(criteria) > 0:

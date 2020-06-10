@@ -11,6 +11,9 @@ regexp_s_object_name = '(?<=<name>ObjectType</name>\n\s{8}<value>\n\s{12}<string
 regexp_s_object_name_from_file_name = '.*?(?=\.)'
 regexp_rules = '(?<=<rules>)(.*?)(?=</rules>)'
 regexp_full_name = '<fullName>(.*?)</fullName>'
+regexp_formulas = '<formulas>(.*?)</formulas>'
+regexp_criteria_items = '(<criteriaItems>.*?</criteriaItems>)'
+regexp_description = '<stringValue>(.*?)</stringValue>'
 
 regexp_find_lookup_fields = '(?<=<fields>)\n\s{8}<fullName>([a-zA-Z0-9_]+)</fullName>' \
                             '(?:(?!<fields>)(?!</fields>).)*?(?=<type>(?:Lookup|Hierarchy)</type>\n\s{4}</fields>)'
@@ -23,6 +26,7 @@ regexp_pb_is_null_true_start = '<stringValue>GlobalConstant</stringValue>\n\s{20
 regexp_pb_is_null_true_end = '</leftValueReference>\n\s{16}<operator>EqualTo</operator>'
 
 regexp_pb_equal_null = '\s*==\s*(?:NULL|null)'
+regexp_pb_isblank_or_isnull = '(?<!NOT)\s*\(\s*(?:ISBLANK|ISNULL)\s*\(.*?'
 
 regexp_pb_is_not_null = '</leftValueReference>\n\s{16}<operator>IsNull</operator>' + \
                         '\n\s{16}<rightValue>\n\s{20}<booleanValue>false'
@@ -35,6 +39,8 @@ regexp_pb_name_of_is_changed_rule = '<leftValueReference>(isChanged.*?)</leftVal
 
 regexp_pb_is_changed_rule_start = '<rules>\n\s{12}<name>'
 regexp_pb_is_changed_rule_end = '.*?</rules>'
+
+regexp_pb_is_changed = 'ISCHANGED\s*\(\s*.*?\.'
 
 regexp_wf_is_null_true_start = '<fullName>(.*?)</fullName>.*?<formula>.*?(?:ISNULL).*?'
 regexp_wf_is_null_true_end = '.*?</formula>'
@@ -72,7 +78,7 @@ def get_wf_result(dictionary, wf_name, rule_name, errors, desc):
     dict_rule = {'name': rule_name, 'lookup_fields': errors, 'description': desc[0]}
 
     if 'workflows' not in dictionary:
-        list_list = [dict_rule]
-        dictionary['workflows'] = list_list
+        rule_list = [dict_rule]
+        dictionary['workflows'] = rule_list
     else:
         dictionary['workflows'].append(dict_rule)
