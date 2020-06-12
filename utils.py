@@ -11,6 +11,7 @@ regexp_s_object_name = '(?<=<name>ObjectType</name>\n\s{8}<value>\n\s{12}<string
 regexp_s_object_name_from_file_name = '.*?(?=\.)'
 regexp_rules = '(?<=<rules>)(.*?)(?=</rules>)'
 regexp_full_name = '<fullName>(.*?)</fullName>'
+regexp_formula = '<formula>(.*?)</formula>'
 regexp_formulas = '<formulas>(.*?)</formulas>'
 regexp_criteria_items = '(<criteriaItems>.*?</criteriaItems>)'
 regexp_description = '<stringValue>(.*?)</stringValue>'
@@ -26,7 +27,7 @@ regexp_pb_is_null_true_start = '<stringValue>GlobalConstant</stringValue>\n\s{20
 regexp_pb_is_null_true_end = '</leftValueReference>\n\s{16}<operator>EqualTo</operator>'
 
 regexp_pb_equal_null = '\s*==\s*(?:NULL|null)'
-regexp_pb_isblank_or_isnull = '(?<!NOT)\s*\(\s*(?:ISBLANK|ISNULL)\s*\(.*?'
+regexp_pb_isblank_or_isnull = '(?<!NOT\()\s*(?:ISBLANK|ISNULL)\s*\(.*?'
 
 regexp_pb_is_not_null = '</leftValueReference>\n\s{16}<operator>IsNull</operator>' + \
                         '\n\s{16}<rightValue>\n\s{20}<booleanValue>false'
@@ -42,8 +43,9 @@ regexp_pb_is_changed_rule_end = '.*?</rules>'
 
 regexp_pb_is_changed = 'ISCHANGED\s*\(\s*.*?\.'
 
-regexp_wf_is_null_true_start = '<fullName>(.*?)</fullName>.*?<formula>.*?(?:ISNULL).*?'
-regexp_wf_is_null_true_end = '.*?</formula>'
+regexp_wf_isnull_isblank_start = '(?:(?<!NOT\()\s*(?:ISNULL|ISBLANK).*?'
+regexp_wf_isnull_isblank_end = '|'
+regexp_wf_equal_null = '\s*==\s*(?:NULL|null))'
 
 regexp_wf_is_changed = 'ISCHANGED\s*\(\s*'
 
@@ -75,7 +77,13 @@ def get_wf_result(dictionary, wf_name, rule_name, errors, desc):
     if 'sObject' not in dictionary:
         dictionary['sObject'] = re.search(regexp_s_object_name_from_file_name, wf_name).group(0)
 
-    dict_rule = {'name': rule_name, 'lookup_fields': errors, 'description': desc[0]}
+    errors_without_empty_str = []
+    for error in errors:
+        for err in error:
+            if err is not '':
+                errors_without_empty_str.append(err)
+
+    dict_rule = {'name': rule_name, 'lookup_fields': errors_without_empty_str, 'description': desc[0]}
 
     if 'workflows' not in dictionary:
         rule_list = [dict_rule]

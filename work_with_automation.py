@@ -166,6 +166,9 @@ class WorkWithAutomation:
                         errors = {'fields': list_unique_errors_isblank_or_isnull, 'description': desc}
                         list_errors += [errors]
 
+                    if len(list_unique_errors_equal_null) > 0 or len(list_unique_errors_isblank_or_isnull) > 0:
+                        continue
+
                     warnings_is_changed = re.findall(
                         utils.regexp_pb_is_changed + lookup_fields,
                         formula,
@@ -198,15 +201,15 @@ class WorkWithAutomation:
             with open(name_wf, "r") as file:
                 rules = re.findall(utils.regexp_rules, file.read(), re.M | re.S)
                 for rule in rules:
-                    error = re.findall(regexp_with_lookup_fields, rule, re.M | re.S)
-                    if len(error) > 0:
+                    errors = re.findall(regexp_with_lookup_fields, rule, re.M | re.S)
+                    if len(errors) > 0:
                         rule_name = re.findall(utils.regexp_full_name, rule, re.M | re.S)[0]
-                        formula = re.findall(utils.regexp_formulas, rule, re.M | re.S)
+                        formula = re.findall(utils.regexp_formula, rule, re.M | re.S)
                         criteria = re.findall(utils.regexp_criteria_items, rule, re.M | re.S)
                         if len(formula) > 0:
-                            utils.get_wf_result(dict_result, name_wf, rule_name, error, formula)
+                            utils.get_wf_result(dict_result, name_wf, rule_name, errors, formula)
                         elif len(criteria) > 0:
-                            utils.get_wf_result(dict_result, name_wf, rule_name, error, criteria)
+                            utils.get_wf_result(dict_result, name_wf, rule_name, errors, criteria)
         os.chdir(utils.rootFolder)
         return dict_result
 
@@ -240,9 +243,11 @@ class WorkWithAutomation:
             if key in dict_s_objects_wfs:
                 if len(dict_s_objects_lookup_fields[key]) > 0:
                     lookup_fields = dict_s_objects_lookup_fields[key]
-                    error_regexp = utils.regexp_wf_is_null_true_start \
+                    error_regexp = utils.regexp_wf_isnull_isblank_start \
                                    + utils.get_str_for_regexp(lookup_fields) \
-                                   + utils.regexp_wf_is_null_true_end
+                                   + utils.regexp_wf_isnull_isblank_end \
+                                   + utils.get_str_for_regexp(lookup_fields) \
+                                   + utils.regexp_wf_equal_null
                     warning_regexp = utils.regexp_wf_is_changed \
                                      + utils.get_str_for_regexp(lookup_fields)
                     for wf in dict_s_objects_wfs[key]:
